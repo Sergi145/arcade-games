@@ -12,5 +12,5 @@ https://github.com/Klerith/fernando-skills
 ## Skills usadas
 
 ```bash
-npx skills@latest add Klerith/fernando-skills
+npx skills@latest add Klerith/fernando-skills ser
 ```
