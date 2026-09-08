@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Reference prototype (plain CDN React, not app source):
+    "references/**",
   ]),
 ]);
 
