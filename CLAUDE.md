@@ -18,7 +18,8 @@ npm run build   # production build
 npm run start   # run the production build
 npm run lint    # eslint
 ```
-
+## Styles
+Usa siempre /frontend-design para diseñar frontend
 There is no test runner configured yet.
 
 ## Architecture
