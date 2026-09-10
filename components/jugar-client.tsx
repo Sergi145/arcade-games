@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Game } from "@/lib/games";
 import { useSession } from "@/lib/session";
-import type { RocasEngineState } from "@/lib/rocas-engine";
 import {
   REAL_GAMES,
   type RealGameHandle,
+  type RealGameState,
 } from "@/components/real-game-registry";
 
 export function JugarClient({ game }: { game: Game }) {
@@ -29,7 +29,7 @@ export function JugarClient({ game }: { game: Game }) {
 
   const level = RealGame ? engineLevel : Math.floor(score / 2500) + 1;
 
-  const handleGameUpdate = useCallback((state: RocasEngineState) => {
+  const handleGameUpdate = useCallback((state: RealGameState) => {
     setScore(state.score);
     setLives(state.lives);
     setEngineLevel(state.level);

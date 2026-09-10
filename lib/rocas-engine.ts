@@ -1,9 +1,6 @@
-export type RocasEngineState = {
-  score: number;
-  lives: number;
-  level: number;
-  gameOver: boolean;
-};
+import type { RealGameState } from "@/components/real-game-registry";
+
+export type RocasEngineState = RealGameState;
 
 export type RocasEngineCallbacks = {
   onUpdate: (state: RocasEngineState) => void;

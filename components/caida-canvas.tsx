@@ -1,24 +1,12 @@
 "use client";
 
 import { useEffect, useImperativeHandle, useRef } from "react";
-import { createRocasEngine, type RocasEngineHandle } from "@/lib/rocas-engine";
-import type { RealGameState } from "@/components/real-game-registry";
+import { createCaidaEngine, type CaidaEngineHandle } from "@/lib/caida-engine";
+import type { RealGameProps } from "@/components/real-game-registry";
 
-export type RealGameHandle = {
-  pause: () => void;
-  resume: () => void;
-  reset: () => void;
-  forceGameOver: () => void;
-};
-
-export type RealGameProps = {
-  onUpdate: (state: RealGameState) => void;
-  ref?: React.Ref<RealGameHandle>;
-};
-
-export default function RocasCanvas({ onUpdate, ref }: RealGameProps) {
+export default function CaidaCanvas({ onUpdate, ref }: RealGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const engineRef = useRef<RocasEngineHandle | null>(null);
+  const engineRef = useRef<CaidaEngineHandle | null>(null);
   const onUpdateRef = useRef(onUpdate);
 
   useEffect(() => {
@@ -29,7 +17,7 @@ export default function RocasCanvas({ onUpdate, ref }: RealGameProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = createRocasEngine(canvas, {
+    const engine = createCaidaEngine(canvas, {
       onUpdate: (state) => onUpdateRef.current(state),
     });
     engineRef.current = engine;
