@@ -10,9 +10,14 @@ import {
   type RealGameState,
 } from "@/components/real-game-registry";
 
+const CRT_ASPECT_RATIO = 4 / 3;
+const CRT_BOTTOM_GUTTER = 24;
+
 export function JugarClient({ game }: { game: Game }) {
   const RealGame = REAL_GAMES[game.id];
   const gameRef = useRef<RealGameHandle>(null);
+  const crtRef = useRef<HTMLDivElement>(null);
+  const crtScreenRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
   const { user, saveScore } = useSession();
@@ -26,6 +31,40 @@ export function JugarClient({ game }: { game: Game }) {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [crtMaxWidth, setCrtMaxWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const crt = crtRef.current;
+    const crtScreen = crtScreenRef.current;
+    const container = crt?.parentElement;
+    if (!crt || !crtScreen || !container) return;
+
+    const recalc = () => {
+      const crtRect = crt.getBoundingClientRect();
+      const crtScreenRect = crtScreen.getBoundingClientRect();
+      const containerWidth = container.getBoundingClientRect().width;
+      const verticalChrome = crtRect.height - crtScreenRect.height;
+
+      const availableHeight =
+        window.innerHeight - crtRect.top - CRT_BOTTOM_GUTTER;
+      const maxScreenHeight = availableHeight - verticalChrome;
+      if (maxScreenHeight <= 0) return;
+
+      const heightDerivedWidth = maxScreenHeight * CRT_ASPECT_RATIO;
+      setCrtMaxWidth(Math.floor(Math.min(containerWidth, heightDerivedWidth)));
+    };
+
+    recalc();
+
+    const resizeObserver = new ResizeObserver(recalc);
+    resizeObserver.observe(container);
+    window.addEventListener("resize", recalc);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", recalc);
+    };
+  }, []);
 
   const level = RealGame ? engineLevel : Math.floor(score / 2500) + 1;
 
@@ -113,8 +152,12 @@ export function JugarClient({ game }: { game: Game }) {
         </div>
       </div>
 
-      <div className="crt">
-        <div className="crt-screen">
+      <div
+        className="crt"
+        ref={crtRef}
+        style={crtMaxWidth ? { maxWidth: crtMaxWidth } : undefined}
+      >
+        <div className="crt-screen" ref={crtScreenRef}>
           {RealGame ? (
             <RealGame ref={gameRef} onUpdate={handleGameUpdate} />
           ) : (
