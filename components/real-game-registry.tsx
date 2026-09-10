@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import RocasCanvas, { type RealGameProps } from "./rocas-canvas";
 import CaidaCanvas from "./caida-canvas";
 import BloqueBusterCanvas from "./bloque-buster-canvas";
+import SerpentinaCanvas from "./serpentina-canvas";
 
 export type { RealGameProps, RealGameHandle } from "./rocas-canvas";
 
@@ -16,4 +17,5 @@ export const REAL_GAMES: Record<string, ComponentType<RealGameProps>> = {
   rocas: RocasCanvas,
   caida: CaidaCanvas,
   "bloque-buster": BloqueBusterCanvas,
+  serpentina: SerpentinaCanvas,
 };
