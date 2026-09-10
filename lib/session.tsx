@@ -1,18 +1,27 @@
 "use client";
 
-import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export type SessionUser = { name: string };
-export type SavedScore = { game: string; score: number; name: string; at: number };
 
 const USER_KEY = "av:user:v1";
-const SCORES_KEY = "av:scores:v1";
 
 type SessionContextValue = {
   user: SessionUser | null;
   login: (user: SessionUser) => void;
   logout: () => void;
-  saveScore: (entry: { game: string; score: number; name: string }) => void;
+  saveScore: (entry: {
+    game: string;
+    score: number;
+    name: string;
+  }) => Promise<void>;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -63,24 +72,21 @@ function setStoredUser(user: SessionUser | null) {
   listeners.forEach((l) => l());
 }
 
-function appendSavedScore(entry: SavedScore) {
-  try {
-    const all: SavedScore[] = JSON.parse(localStorage.getItem(SCORES_KEY) ?? "[]");
-    all.push(entry);
-    localStorage.setItem(SCORES_KEY, JSON.stringify(all));
-  } catch {
-    // localStorage no disponible: la puntuación no persiste, pero el modal igualmente confirma el guardado.
-  }
-}
-
 export function SessionProvider({ children }: { children: ReactNode }) {
   const user = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const login = useCallback((u: SessionUser) => setStoredUser(u), []);
   const logout = useCallback(() => setStoredUser(null), []);
-  const saveScore = useCallback((entry: { game: string; score: number; name: string }) => {
-    appendSavedScore({ ...entry, at: Date.now() });
-  }, []);
+  const saveScore = useCallback(
+    async (entry: { game: string; score: number; name: string }) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("scores")
+        .insert({ game_id: entry.game, name: entry.name, score: entry.score });
+      if (error) throw error;
+    },
+    [],
+  );
 
   return (
     <SessionContext.Provider value={{ user, login, logout, saveScore }}>
@@ -91,6 +97,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
 export function useSession() {
   const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error("useSession debe usarse dentro de un SessionProvider");
+  if (!ctx)
+    throw new Error("useSession debe usarse dentro de un SessionProvider");
   return ctx;
 }
