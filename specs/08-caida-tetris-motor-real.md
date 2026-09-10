@@ -1,6 +1,6 @@
 # SPEC 08 — Motor real de Tetris en "CAÍDA"
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 04
 > **Date:** 2026-09-10
 > **Objective:** Portar el motor real de Tetris (`references/started-games/03-tetris/game.js`) a TypeScript e integrarlo en `/juego/caida/jugar`, reemplazando la simulación falsa de ese juego por gameplay real, generalizando primero el tipo de estado compartido para que deje de estar acoplado a ROCAS.
@@ -81,23 +81,23 @@ export function createCaidaEngine(
 
 ## Acceptance criteria
 
-- [ ] `RealGameState` vive en `components/real-game-registry.tsx`; `RocasEngineState` es un alias del mismo tipo; `rocas-canvas.tsx` y `jugar-client.tsx` ya no importan un tipo específico de ROCAS.
-- [ ] `/juego/rocas/jugar` funciona exactamente igual que antes de este spec (el refactor de tipos no cambia comportamiento).
-- [ ] `/juego/caida/jugar` renderiza el canvas del motor real dentro del bisel CRT: tablero 10×20 centrado, panel lateral con "SIGUIENTE" (preview de pieza) y "LÍNEAS", pieza fantasma, y las 8 piezas del original incluida la "N".
-- [ ] El canvas interno es 800×600 y escala por CSS al bisel CRT sin distorsión (proporción 4:3 preservada), igual que ROCAS.
-- [ ] El HUD de React (Puntuación, Nivel) refleja en tiempo real el estado del motor; "Vidas" muestra `"—"` de forma constante (motor reporta `lives: 0`).
-- [ ] Rotar cerca de un borde o de otras piezas aplica wall-kicks `[0,-1,1,-2,2]` igual que el original.
-- [ ] La velocidad de caída aumenta y el nivel sube cada 10 líneas, siguiendo `max(100, 1000-(nivel-1)×90)` ms.
-- [ ] El botón PAUSA detiene la caída y el input manteniendo el último fotograma visible bajo el overlay "EN PAUSA" de React; REANUDAR continúa exactamente donde quedó. No existe tecla `P` de pausa dentro del motor.
-- [ ] El botón FIN dispara el modal de fin de partida con la puntuación acumulada, sin reiniciar el motor.
-- [ ] Al topar una pieza nueva contra el tablero lleno (game over natural del original), aparece el modal de fin de partida con la puntuación final real.
-- [ ] Guardar puntuación desde el modal invoca `useSession().saveScore` igual que en los demás juegos, sin cambios en `lib/session.tsx`.
-- [ ] "JUGAR DE NUEVO" reinicia por completo el motor (tablero, score, líneas, nivel) vía `reset()`, sin recargar la página.
-- [ ] SALIR navega a `/juego/caida` y desmonta el motor limpiamente, sin listeners de teclado ni `requestAnimationFrame` colgando.
-- [ ] `/juego/caida` y `/salon-de-la-fama` (pestaña CAÍDA) muestran puntuaciones reales guardadas, con el trigger `bump_game_stats()` de SPEC 07 actualizando `games.best`/`games.plays` para `caida`.
-- [ ] Los 6 juegos restantes sin motor real siguen mostrando la simulación falsa sin cambios.
-- [ ] La tabla `games`, la fila de `caida` y `lib/games.ts` no cambian.
-- [ ] `npm run lint` y `npm run build` terminan sin errores.
+- [x] `RealGameState` vive en `components/real-game-registry.tsx`; `RocasEngineState` es un alias del mismo tipo; `rocas-canvas.tsx` y `jugar-client.tsx` ya no importan un tipo específico de ROCAS.
+- [x] `/juego/rocas/jugar` funciona exactamente igual que antes de este spec (el refactor de tipos no cambia comportamiento).
+- [x] `/juego/caida/jugar` renderiza el canvas del motor real dentro del bisel CRT: tablero 10×20 centrado, panel lateral con "SIGUIENTE" (preview de pieza) y "LÍNEAS", pieza fantasma, y las 8 piezas del original incluida la "N".
+- [x] El canvas interno es 800×600 y escala por CSS al bisel CRT sin distorsión (proporción 4:3 preservada), igual que ROCAS.
+- [x] El HUD de React (Puntuación, Nivel) refleja en tiempo real el estado del motor; "Vidas" muestra `"—"` de forma constante (motor reporta `lives: 0`).
+- [x] Rotar cerca de un borde o de otras piezas aplica wall-kicks `[0,-1,1,-2,2]` igual que el original.
+- [x] La velocidad de caída aumenta y el nivel sube cada 10 líneas, siguiendo `max(100, 1000-(nivel-1)×90)` ms.
+- [x] El botón PAUSA detiene la caída y el input manteniendo el último fotograma visible bajo el overlay "EN PAUSA" de React; REANUDAR continúa exactamente donde quedó. No existe tecla `P` de pausa dentro del motor.
+- [x] El botón FIN dispara el modal de fin de partida con la puntuación acumulada, sin reiniciar el motor.
+- [x] Al topar una pieza nueva contra el tablero lleno (game over natural del original), aparece el modal de fin de partida con la puntuación final real.
+- [x] Guardar puntuación desde el modal invoca `useSession().saveScore` igual que en los demás juegos, sin cambios en `lib/session.tsx`.
+- [x] "JUGAR DE NUEVO" reinicia por completo el motor (tablero, score, líneas, nivel) vía `reset()`, sin recargar la página.
+- [x] SALIR navega a `/juego/caida` y desmonta el motor limpiamente, sin listeners de teclado ni `requestAnimationFrame` colgando.
+- [x] `/juego/caida` y `/salon-de-la-fama` (pestaña CAÍDA) muestran puntuaciones reales guardadas, con el trigger `bump_game_stats()` de SPEC 07 actualizando `games.best`/`games.plays` para `caida`.
+- [x] Los 6 juegos restantes sin motor real siguen mostrando la simulación falsa sin cambios.
+- [x] La tabla `games`, la fila de `caida` y `lib/games.ts` no cambian.
+- [x] `npm run lint` y `npm run build` terminan sin errores.
 
 ## Decisions
 
