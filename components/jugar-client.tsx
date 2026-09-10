@@ -24,6 +24,8 @@ export function JugarClient({ game }: { game: Game }) {
   const [over, setOver] = useState(false);
   const [name, setName] = useState(user ? user.name : "INVITADO");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const level = RealGame ? engineLevel : Math.floor(score / 2500) + 1;
 
@@ -69,6 +71,7 @@ export function JugarClient({ game }: { game: Game }) {
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setSaveError(null);
   };
 
   return (
@@ -171,13 +174,25 @@ export function JugarClient({ game }: { game: Game }) {
                 />
                 <button
                   className="btn yellow"
-                  onClick={() => {
-                    saveScore({ game: game.id, score, name });
-                    setSaved(true);
+                  disabled={saving}
+                  onClick={async () => {
+                    setSaving(true);
+                    setSaveError(null);
+                    try {
+                      await saveScore({ game: game.id, score, name });
+                      setSaved(true);
+                    } catch {
+                      setSaveError(
+                        "NO SE PUDO GUARDAR LA PUNTUACIÓN. INTÉNTALO DE NUEVO.",
+                      );
+                    } finally {
+                      setSaving(false);
+                    }
                   }}
                 >
-                  GUARDAR PUNTUACIÓN
+                  {saving ? "GUARDANDO..." : "GUARDAR PUNTUACIÓN"}
                 </button>
+                {saveError && <div className="toast-saved">▸ {saveError}</div>}
               </div>
             ) : (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
