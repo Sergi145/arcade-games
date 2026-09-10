@@ -1,6 +1,6 @@
 # SPEC 07 — Mejor global y número de partidas en vivo
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 05, SPEC 06
 > **Date:** 2026-09-10
 > **Objective:** Hacer que `games.best` y `games.plays` se actualicen automáticamente a partir de las puntuaciones reales guardadas en `scores`, en vez de quedarse fijos en los valores mock sembrados por SPEC 05.

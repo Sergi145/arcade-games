@@ -10,7 +10,7 @@ export type Game = {
   cover: string;
   color: GameColor;
   best: number;
-  plays: string;
+  plays: number;
 };
 
 export const CATS: Array<"TODOS" | GameCategory> = ["TODOS", "ARCADE", "PUZZLE", "SHOOTER", "VERSUS"];
