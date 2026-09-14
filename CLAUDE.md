@@ -104,12 +104,14 @@ Pattern shared by all real games (follow it for new ones; the `add-arcade-game` 
 - `references/started-games/` — plain-JS games to port into engines.
 - `references/source-assets/` — raw assets (e.g. snake sprites).
 - `references/implemented_games.md` — quick-reference table (id, title, category, color, description) of the games with a real engine; consult it when you need that info instead of re-querying Supabase.
+- `references/games-suggestions-todo.md` — persistent log of game candidates (pending / approved / implemented / discarded), maintained by the `game-planner` agent (see Tooling).
 
 ## Tooling
 
 - `.claude/settings.json` — `PostToolUse` hook on `Write|Edit` runs `.claude/hooks/format-on-write.ps1` (Prettier + `eslint --fix` on `.tsx/.jsx/.md/.mdx`).
 - `.claude/skills/add-arcade-game` — project skill to add a real game (engine + registry + leaderboard).
 - `.claude/skills/frontend-design` — design skill (mandatory for frontend work).
+- `.claude/agents/game-planner` — planning-only agent for the game catalog: decides which candidate game (new or from `references/started-games/`) best fits Arcade Vault next. It never writes app code; its only writable file is `references/games-suggestions-todo.md`, where it keeps the persistent log of pending/approved/implemented/discarded suggestions. Use it to decide what to build, then hand off to `add-arcade-game` (or a new spec) to actually build it.
 - `.claude/agents/game-jam` — parallel game-brainstorming agent: given a theme, fans out 3 `general-purpose` subagents in parallel, each proposing a distinct game (different `GameCategory` + core mechanic) with a full spec under `specs/game-jam/<date>-<theme-slug>/`, then lets the user pick one via `AskUserQuestion`. On a pick it promotes the winner into the main sequence as `specs/NN-slug.md` (Status: Draft — still needs human approval before `/spec-impl`) and marks the two runner-ups as discarded in place, never deleted. Its only writable locations are `specs/game-jam/**` and new files at `specs/NN-slug.md`.
 
 ## Spec Driven Design
