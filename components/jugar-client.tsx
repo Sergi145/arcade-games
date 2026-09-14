@@ -6,18 +6,38 @@ import type { Game } from "@/lib/games";
 import { useSession } from "@/lib/session";
 import {
   REAL_GAMES,
+  SKIN_ENABLED_GAMES,
   type RealGameHandle,
   type RealGameState,
 } from "@/components/real-game-registry";
+import { SKIN_LABELS, useSkinPreference, type SkinId } from "@/lib/skins";
+import {
+  TOUCH_CONTROLS_LAYOUTS,
+  TouchControls,
+  useIsTouchDevice,
+} from "@/components/touch-controls";
 
 const CRT_ASPECT_RATIO = 4 / 3;
 const CRT_BOTTOM_GUTTER = 24;
+
+const SKIN_ORDER: SkinId[] = ["clasico", "neon", "retro"];
+// Clase de acento reutilizada del HUD (ver .btn/.btn.yellow/.btn.ghost en
+// app/globals.css): cian por defecto para Clásico, amarillo vivo para Neón,
+// atenuado ("ghost") para Retro.
+const SKIN_BUTTON_CLASS: Record<SkinId, string> = {
+  clasico: "btn",
+  neon: "btn yellow",
+  retro: "btn ghost",
+};
 
 export function JugarClient({ game }: { game: Game }) {
   const RealGame = REAL_GAMES[game.id];
   const gameRef = useRef<RealGameHandle>(null);
   const crtRef = useRef<HTMLDivElement>(null);
   const crtScreenRef = useRef<HTMLDivElement>(null);
+  const touchControlsRef = useRef<HTMLDivElement>(null);
+  const isTouchDevice = useIsTouchDevice();
+  const touchLayout = TOUCH_CONTROLS_LAYOUTS[game.id];
 
   const router = useRouter();
   const { user, saveScore } = useSession();
@@ -32,6 +52,8 @@ export function JugarClient({ game }: { game: Game }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [crtMaxWidth, setCrtMaxWidth] = useState<number | undefined>(undefined);
+  const skinEnabled = SKIN_ENABLED_GAMES.has(game.id);
+  const [skin, chooseSkin] = useSkinPreference(game.id);
 
   useEffect(() => {
     const crt = crtRef.current;
@@ -44,9 +66,14 @@ export function JugarClient({ game }: { game: Game }) {
       const crtScreenRect = crtScreen.getBoundingClientRect();
       const containerWidth = container.getBoundingClientRect().width;
       const verticalChrome = crtRect.height - crtScreenRect.height;
+      const touchControlsHeight =
+        touchControlsRef.current?.getBoundingClientRect().height ?? 0;
 
       const availableHeight =
-        window.innerHeight - crtRect.top - CRT_BOTTOM_GUTTER;
+        window.innerHeight -
+        crtRect.top -
+        CRT_BOTTOM_GUTTER -
+        touchControlsHeight;
       const maxScreenHeight = availableHeight - verticalChrome;
       if (maxScreenHeight <= 0) return;
 
@@ -135,6 +162,23 @@ export function JugarClient({ game }: { game: Game }) {
             <div className="l">Nivel</div>
             <div className="v">{String(level).padStart(2, "0")}</div>
           </div>
+          {skinEnabled && (
+            <div className="hud-stat">
+              <div className="l">Skin</div>
+              <div className="hud-actions">
+                {SKIN_ORDER.map((id) => (
+                  <button
+                    key={id}
+                    className={SKIN_BUTTON_CLASS[id]}
+                    style={{ opacity: skin === id ? 1 : 0.5 }}
+                    onClick={() => chooseSkin(id)}
+                  >
+                    {SKIN_LABELS[id]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="hud-actions">
           <button className="btn yellow" onClick={togglePause}>
@@ -159,7 +203,7 @@ export function JugarClient({ game }: { game: Game }) {
       >
         <div className="crt-screen" ref={crtScreenRef}>
           {RealGame ? (
-            <RealGame ref={gameRef} onUpdate={handleGameUpdate} />
+            <RealGame ref={gameRef} onUpdate={handleGameUpdate} skin={skin} />
           ) : (
             <div className="game-arena">
               <div className="grid-floor"></div>
@@ -199,6 +243,17 @@ export function JugarClient({ game }: { game: Game }) {
           <span>CARGA · 1MB</span>
         </div>
       </div>
+
+      {isTouchDevice && touchLayout && (
+        <div
+          ref={touchControlsRef}
+          style={
+            paused || over ? { opacity: 0.4, pointerEvents: "none" } : undefined
+          }
+        >
+          <TouchControls layout={touchLayout} />
+        </div>
+      )}
 
       {over && (
         <div className="modal-bd">

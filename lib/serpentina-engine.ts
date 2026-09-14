@@ -1,16 +1,82 @@
 import type { RealGameState } from "@/components/real-game-registry";
+import type { SkinId } from "@/lib/skins";
 
 export type SerpentinaEngineState = RealGameState;
 
 export type SerpentinaEngineCallbacks = {
   onUpdate: (state: SerpentinaEngineState) => void;
+  skin?: SkinId;
 };
+
+// ── Paletas de skin ──────────────────────────────────────────────────────
+// Un rol de color por elemento dibujado en render(). `clasico` es un
+// snapshot exacto de los literales que el motor ya usaba antes de existir
+// las skins: no debe cambiar nunca. Los campos `*Glow` son opcionales y
+// solo los usan las skins con resplandor (p. ej. Neón); si faltan, no se
+// aplica ningún shadowBlur y el resultado es visualmente idéntico a antes.
+type SerpentinaPalette = {
+  background: string;
+  grid: string;
+  fruitFallback: string;
+  fruitGlow?: string;
+  snakeHead: string;
+  snakeHeadGlow?: string;
+  snakeBody: string;
+  snakeBodyGlow?: string;
+  eye: string;
+};
+
+const PALETTES: Record<SkinId, SerpentinaPalette> = {
+  clasico: {
+    background: "#04160f",
+    grid: "rgba(0,255,150,0.06)",
+    fruitFallback: "#ff5a7a",
+    snakeHead: "#7CFC9A",
+    snakeBody: "#2ecc71",
+    eye: "#04160f",
+  },
+  neon: {
+    // Fondo casi negro (var(--bg) de globals.css) para que los acentos
+    // neón resalten con más contraste que en Clásico (que usa un negro
+    // teñido de verde). Cabeza en amarillo, cuerpo en cian y fruta de
+    // respaldo en magenta: mismos roles que Clásico, distinta paleta y
+    // con resplandor para diferenciarse a simple vista.
+    background: "#0a0a0f",
+    grid: "rgba(0,245,255,0.14)",
+    fruitFallback: "#ff006e",
+    fruitGlow: "#ff006e",
+    snakeHead: "#f5ff00",
+    snakeHeadGlow: "#f5ff00",
+    snakeBody: "#00f5ff",
+    snakeBodyGlow: "#00f5ff",
+    eye: "#0a0a0f",
+  },
+  retro: {
+    // Fósforo ámbar monocromo estilo terminal CRT antigua: fondo casi
+    // negro (no el negro-verdoso de Clásico ni el negro-azulado de Neón),
+    // un único tono ámbar con solo variaciones de brillo entre roles, sin
+    // resplandor (se omiten los campos `*Glow`) y una rejilla casi
+    // invisible para bajar el contraste general. Queda inconfundible
+    // frente a las otras dos, que son verdes/multicolor con glow.
+    background: "#0a0500",
+    grid: "rgba(255,176,0,0.05)",
+    fruitFallback: "#8f5700",
+    snakeHead: "#ffb000",
+    snakeBody: "#c98600",
+    eye: "#0a0500",
+  },
+};
+
+function resolvePalette(skin: SkinId): SerpentinaPalette {
+  return PALETTES[skin];
+}
 
 export type SerpentinaEngineHandle = {
   pause: () => void;
   resume: () => void;
   reset: () => void;
   forceGameOver: () => void;
+  setSkin: (skin: SkinId) => void;
   destroy: () => void;
 };
 
@@ -76,6 +142,7 @@ export function createSerpentinaEngine(
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
+  let palette = resolvePalette(callbacks.skin ?? "clasico");
 
   // ── Asset de frutas ──────────────────────────────────────────────────────
   const fruitImg = new Image();
@@ -192,6 +259,10 @@ export function createSerpentinaEngine(
       const sprite = FRUIT_ATLAS[fruit.spriteIndex];
       const targetH = CELL * 1.3;
       const targetW = (sprite.w / sprite.h) * targetH;
+      if (palette.fruitGlow) {
+        ctx.shadowColor = palette.fruitGlow;
+        ctx.shadowBlur = 10;
+      }
       ctx.drawImage(
         fruitImg,
         sprite.x,
@@ -203,17 +274,25 @@ export function createSerpentinaEngine(
         targetW,
         targetH,
       );
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = "transparent";
     } else {
-      ctx.fillStyle = "#ff5a7a";
+      ctx.fillStyle = palette.fruitFallback;
+      if (palette.fruitGlow) {
+        ctx.shadowColor = palette.fruitGlow;
+        ctx.shadowBlur = 10;
+      }
       ctx.fillRect(fruit.x * CELL + 3, fruit.y * CELL + 3, CELL - 6, CELL - 6);
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = "transparent";
     }
   }
 
   function draw() {
-    ctx.fillStyle = "#04160f";
+    ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.strokeStyle = "rgba(0,255,150,0.06)";
+    ctx.strokeStyle = palette.grid;
     ctx.lineWidth = 1;
     for (let x = 0; x <= COLS; x++) {
       ctx.beginPath();
@@ -232,7 +311,13 @@ export function createSerpentinaEngine(
 
     snake.forEach((seg, i) => {
       const isHead = i === 0;
-      ctx.fillStyle = isHead ? "#7CFC9A" : "#2ecc71";
+      const fillColor = isHead ? palette.snakeHead : palette.snakeBody;
+      const glowColor = isHead ? palette.snakeHeadGlow : palette.snakeBodyGlow;
+      ctx.fillStyle = fillColor;
+      if (glowColor) {
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 8;
+      }
       const pad = 1.5;
       const r = 4;
       const x = seg.x * CELL + pad;
@@ -242,9 +327,11 @@ export function createSerpentinaEngine(
       ctx.beginPath();
       ctx.roundRect(x, y, w, h, r);
       ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = "transparent";
 
       if (isHead) {
-        ctx.fillStyle = "#04160f";
+        ctx.fillStyle = palette.eye;
         const eyeSize = 2.5;
         const ex1 = x + w * 0.28;
         const ex2 = x + w * 0.72;
@@ -298,6 +385,9 @@ export function createSerpentinaEngine(
     },
     forceGameOver() {
       gameOver = true;
+    },
+    setSkin(skin) {
+      palette = resolvePalette(skin);
     },
     destroy() {
       cancelAnimationFrame(rafId);

@@ -21,3 +21,6 @@ export const REAL_GAMES: Record<string, ComponentType<RealGameProps>> = {
   serpentina: SerpentinaCanvas,
   "raya-veloz": RayaVelozCanvas,
 };
+
+// Juegos con selector de skin visual activo (ver components/jugar-client.tsx).
+export const SKIN_ENABLED_GAMES = new Set<string>(["serpentina"]);
