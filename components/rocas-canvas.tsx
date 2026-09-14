@@ -3,6 +3,7 @@
 import { useEffect, useImperativeHandle, useRef } from "react";
 import { createRocasEngine, type RocasEngineHandle } from "@/lib/rocas-engine";
 import type { RealGameState } from "@/components/real-game-registry";
+import type { SkinId } from "@/lib/skins";
 
 export type RealGameHandle = {
   pause: () => void;
@@ -14,6 +15,8 @@ export type RealGameHandle = {
 export type RealGameProps = {
   onUpdate: (state: RealGameState) => void;
   ref?: React.Ref<RealGameHandle>;
+  /** Skin visual seleccionada; los juegos que aún no la soportan la ignoran. */
+  skin?: SkinId;
 };
 
 export default function RocasCanvas({ onUpdate, ref }: RealGameProps) {
