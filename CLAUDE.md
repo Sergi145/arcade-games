@@ -110,6 +110,7 @@ Pattern shared by all real games (follow it for new ones; the `add-arcade-game` 
 - `.claude/settings.json` — `PostToolUse` hook on `Write|Edit` runs `.claude/hooks/format-on-write.ps1` (Prettier + `eslint --fix` on `.tsx/.jsx/.md/.mdx`).
 - `.claude/skills/add-arcade-game` — project skill to add a real game (engine + registry + leaderboard).
 - `.claude/skills/frontend-design` — design skill (mandatory for frontend work).
+- `.claude/agents/game-jam` — parallel game-brainstorming agent: given a theme, fans out 3 `general-purpose` subagents in parallel, each proposing a distinct game (different `GameCategory` + core mechanic) with a full spec under `specs/game-jam/<date>-<theme-slug>/`, then lets the user pick one via `AskUserQuestion`. On a pick it promotes the winner into the main sequence as `specs/NN-slug.md` (Status: Draft — still needs human approval before `/spec-impl`) and marks the two runner-ups as discarded in place, never deleted. Its only writable locations are `specs/game-jam/**` and new files at `specs/NN-slug.md`.
 
 ## Spec Driven Design
 
@@ -117,6 +118,7 @@ The project follows Spec Driven Design with the `/spec` and `/spec-impl` skills 
 
 - Specs live in `specs/NN-slug.md` with Status / Depends on / Date / Objective header, scope, data model, steps, acceptance criteria and decisions.
 - `specs/.spec-config.yml` — `AutoCreateBranch: true`: `/spec-impl` creates a `spec-NN-slug` branch automatically. Each spec is merged into `main` through a PR.
+- `specs/game-jam/` — scratch/proposal area used by the `game-jam` agent (see Tooling): each run creates `<date>-<theme-slug>/` with 3 competing game proposals (full spec + pitch); not part of the numbered sequence below until one gets promoted to `specs/NN-slug.md`.
 - Before planning or implementing a feature, read the related existing specs and create a new one with the next number.
 
 | #   | Spec                            | Summary                                                     |
