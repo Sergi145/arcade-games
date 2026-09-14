@@ -1,6 +1,6 @@
 # SPEC 11 — CRT del Reproductor adaptable a la resolución de pantalla
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 01, SPEC 04, SPEC 08, SPEC 09, SPEC 10
 > **Date:** 2026-09-10
 > **Objective:** Hacer que el bisel CRT del Reproductor (`components/jugar-client.tsx`) calcule su tamaño máximo teniendo en cuenta tanto el ancho como el alto realmente disponibles en el viewport, para que deje de recortarse verticalmente en ventanas de escritorio de poca altura, sin tocar la resolución interna ni la lógica de ningún motor de juego.
