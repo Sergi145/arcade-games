@@ -103,6 +103,7 @@ Pattern shared by all real games (follow it for new ones; the `add-arcade-game` 
 - `references/templates/` — original React/CDN prototype (visual source of truth).
 - `references/started-games/` — plain-JS games to port into engines.
 - `references/source-assets/` — raw assets (e.g. snake sprites).
+- `references/implemented_games.md` — quick-reference table (id, title, category, color, description) of the games with a real engine; consult it when you need that info instead of re-querying Supabase.
 
 ## Tooling
 
