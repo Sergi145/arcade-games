@@ -1,6 +1,6 @@
 # SPEC 04 — Motor real de Asteroids en "ROCAS"
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 01
 > **Date:** 2026-09-09
 > **Objective:** Portar el motor real de Asteroids (`references/started-games/02-asteroids/game.js`) a TypeScript e integrarlo en `/juego/rocas/jugar`, reemplazando la simulación falsa de ese juego por gameplay real, con el HUD y el modal de fin de partida de React sincronizados al estado del motor.
