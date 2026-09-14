@@ -11,6 +11,11 @@ import {
   type RealGameState,
 } from "@/components/real-game-registry";
 import { SKIN_LABELS, useSkinPreference, type SkinId } from "@/lib/skins";
+import {
+  TOUCH_CONTROLS_LAYOUTS,
+  TouchControls,
+  useIsTouchDevice,
+} from "@/components/touch-controls";
 
 const CRT_ASPECT_RATIO = 4 / 3;
 const CRT_BOTTOM_GUTTER = 24;
@@ -30,6 +35,9 @@ export function JugarClient({ game }: { game: Game }) {
   const gameRef = useRef<RealGameHandle>(null);
   const crtRef = useRef<HTMLDivElement>(null);
   const crtScreenRef = useRef<HTMLDivElement>(null);
+  const touchControlsRef = useRef<HTMLDivElement>(null);
+  const isTouchDevice = useIsTouchDevice();
+  const touchLayout = TOUCH_CONTROLS_LAYOUTS[game.id];
 
   const router = useRouter();
   const { user, saveScore } = useSession();
@@ -58,9 +66,14 @@ export function JugarClient({ game }: { game: Game }) {
       const crtScreenRect = crtScreen.getBoundingClientRect();
       const containerWidth = container.getBoundingClientRect().width;
       const verticalChrome = crtRect.height - crtScreenRect.height;
+      const touchControlsHeight =
+        touchControlsRef.current?.getBoundingClientRect().height ?? 0;
 
       const availableHeight =
-        window.innerHeight - crtRect.top - CRT_BOTTOM_GUTTER;
+        window.innerHeight -
+        crtRect.top -
+        CRT_BOTTOM_GUTTER -
+        touchControlsHeight;
       const maxScreenHeight = availableHeight - verticalChrome;
       if (maxScreenHeight <= 0) return;
 
@@ -230,6 +243,17 @@ export function JugarClient({ game }: { game: Game }) {
           <span>CARGA · 1MB</span>
         </div>
       </div>
+
+      {isTouchDevice && touchLayout && (
+        <div
+          ref={touchControlsRef}
+          style={
+            paused || over ? { opacity: 0.4, pointerEvents: "none" } : undefined
+          }
+        >
+          <TouchControls layout={touchLayout} />
+        </div>
+      )}
 
       {over && (
         <div className="modal-bd">

@@ -701,6 +701,68 @@ a { color: inherit; text-decoration: none; }
   background: var(--green); box-shadow: 0 0 6px var(--green);
 }
 
+/* touch controls (SPEC 13) */
+.touch-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.touch-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows: repeat(3, 56px);
+  gap: 6px;
+  margin: 0 auto;
+}
+.touch-dpad .up { grid-column: 2; grid-row: 1; }
+.touch-dpad .left { grid-column: 1; grid-row: 2; }
+.touch-dpad .right { grid-column: 3; grid-row: 2; }
+.touch-dpad .down { grid-column: 2; grid-row: 3; }
+.touch-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 auto;
+}
+.touch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pixel);
+  font-size: 18px;
+  color: var(--cyan);
+  background: var(--bg-3);
+  border: 1px solid var(--cyan);
+  border-radius: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+.touch-btn:active {
+  background: rgba(0, 245, 255, 0.18);
+  box-shadow: 0 0 14px rgba(0, 245, 255, 0.55), inset 0 0 8px rgba(0, 245, 255, 0.35);
+}
+.touch-actions .touch-btn.action {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  border-color: var(--magenta);
+  color: var(--magenta);
+}
+.touch-actions .touch-btn.action:active {
+  background: rgba(255, 0, 110, 0.18);
+  box-shadow: 0 0 14px rgba(255, 0, 110, 0.55), inset 0 0 8px rgba(255, 0, 110, 0.35);
+}
+
 /* fake in-screen game */
 .game-arena {
   position: absolute; inset: 0;
