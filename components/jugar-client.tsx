@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Game } from "@/lib/games";
 import { useSession } from "@/lib/session";
@@ -47,7 +48,6 @@ export function JugarClient({ game }: { game: Game }) {
   const [engineLevel, setEngineLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  const [name, setName] = useState(user ? user.name : "INVITADO");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -147,7 +147,7 @@ export function JugarClient({ game }: { game: Game }) {
           <div className="hud-stat">
             <div className="l">Jugador</div>
             <div className="v" style={{ color: "var(--ink)" }}>
-              {name}
+              {user?.name ?? "INVITADO"}
             </div>
           </div>
           <div className="hud-stat">
@@ -262,36 +262,57 @@ export function JugarClient({ game }: { game: Game }) {
             <div className="final-label">PUNTUACIÓN FINAL</div>
             <div className="final">{score.toLocaleString("es-ES")}</div>
             {!saved ? (
-              <div className="input-row">
-                <input
-                  value={name}
-                  onChange={(e) =>
-                    setName(e.target.value.toUpperCase().slice(0, 10))
-                  }
-                  placeholder="TUS INICIALES"
-                />
-                <button
-                  className="btn yellow"
-                  disabled={saving}
-                  onClick={async () => {
-                    setSaving(true);
-                    setSaveError(null);
-                    try {
-                      await saveScore({ game: game.id, score, name });
-                      setSaved(true);
-                    } catch {
-                      setSaveError(
-                        "NO SE PUDO GUARDAR LA PUNTUACIÓN. INTÉNTALO DE NUEVO.",
-                      );
-                    } finally {
-                      setSaving(false);
-                    }
-                  }}
-                >
-                  {saving ? "GUARDANDO..." : "GUARDAR PUNTUACIÓN"}
-                </button>
-                {saveError && <div className="toast-saved">▸ {saveError}</div>}
-              </div>
+              user ? (
+                <div className="input-row">
+                  <input value={user.name} readOnly />
+                  <button
+                    className="btn yellow"
+                    disabled={saving}
+                    onClick={async () => {
+                      setSaving(true);
+                      setSaveError(null);
+                      try {
+                        await saveScore({
+                          game: game.id,
+                          score,
+                          name: user.name,
+                        });
+                        setSaved(true);
+                      } catch {
+                        setSaveError(
+                          "NO SE PUDO GUARDAR LA PUNTUACIÓN. INTÉNTALO DE NUEVO.",
+                        );
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                  >
+                    {saving ? "GUARDANDO..." : "GUARDAR PUNTUACIÓN"}
+                  </button>
+                  {saveError && (
+                    <div className="toast-saved">▸ {saveError}</div>
+                  )}
+                </div>
+              ) : (
+                <div className="input-row">
+                  <div
+                    className="mono"
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: 12,
+                      color: "var(--ink-dim)",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    INICIA SESIÓN PARA GUARDAR TU PUNTUACIÓN
+                  </div>
+                  <Link href="/login" className="btn yellow">
+                    INICIAR SESIÓN
+                  </Link>
+                </div>
+              )
             ) : (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
             )}

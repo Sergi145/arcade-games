@@ -4,18 +4,17 @@ import {
   createContext,
   useCallback,
   useContext,
-  useSyncExternalStore,
+  useEffect,
+  useState,
   type ReactNode,
 } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
 export type SessionUser = { name: string };
 
-const USER_KEY = "av:user:v1";
-
 type SessionContextValue = {
   user: SessionUser | null;
-  login: (user: SessionUser) => void;
   logout: () => void;
   saveScore: (entry: {
     game: string;
@@ -26,57 +25,48 @@ type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-const listeners = new Set<() => void>();
-let cachedUser: SessionUser | null | undefined; // undefined = todavía no leído del cliente
-
-function readUser(): SessionUser | null {
-  try {
-    return JSON.parse(localStorage.getItem(USER_KEY) ?? "null");
-  } catch {
-    return null;
-  }
+function pickString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-function getSnapshot(): SessionUser | null {
-  if (cachedUser === undefined) cachedUser = readUser();
-  return cachedUser;
+function deriveName(session: Session): string {
+  const metadata = session.user.user_metadata;
+  const raw =
+    pickString(metadata.name) ??
+    pickString(metadata.full_name) ??
+    pickString(metadata.user_name) ??
+    session.user.email?.split("@")[0] ??
+    "JUGADOR";
+  return raw.toUpperCase().slice(0, 10);
 }
 
-function getServerSnapshot(): SessionUser | null {
-  return null;
-}
-
-function subscribe(onStoreChange: () => void) {
-  listeners.add(onStoreChange);
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === USER_KEY || e.key === null) {
-      cachedUser = readUser();
-      onStoreChange();
-    }
-  };
-  window.addEventListener("storage", onStorage);
-  return () => {
-    listeners.delete(onStoreChange);
-    window.removeEventListener("storage", onStorage);
-  };
-}
-
-function setStoredUser(user: SessionUser | null) {
-  cachedUser = user;
-  try {
-    if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
-    else localStorage.removeItem(USER_KEY);
-  } catch {
-    // localStorage no disponible (p. ej. modo privado): la sesión sigue viva en memoria para esta pestaña.
-  }
-  listeners.forEach((l) => l());
+function toSessionUser(session: Session | null): SessionUser | null {
+  return session ? { name: deriveName(session) } : null;
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const user = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [user, setUser] = useState<SessionUser | null>(null);
 
-  const login = useCallback((u: SessionUser) => setStoredUser(u), []);
-  const logout = useCallback(() => setStoredUser(null), []);
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(toSessionUser(data.session));
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(toSessionUser(session));
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const logout = useCallback(() => {
+    void createClient().auth.signOut();
+  }, []);
+
   const saveScore = useCallback(
     async (entry: { game: string; score: number; name: string }) => {
       const supabase = createClient();
@@ -89,7 +79,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <SessionContext.Provider value={{ user, login, logout, saveScore }}>
+    <SessionContext.Provider value={{ user, logout, saveScore }}>
       {children}
     </SessionContext.Provider>
   );
