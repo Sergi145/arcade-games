@@ -119,6 +119,7 @@ Pattern shared by all real games (follow it for new ones; the `add-arcade-game` 
 
 The project follows Spec Driven Design with the `/spec` and `/spec-impl` skills from [Klerith/fernando-skills](https://github.com/Klerith/fernando-skills) (installed under `app/.claude/skills/` and `app/.agents/skills/`).
 
+- `/spec-impl-game` — project-specific variant of `/spec-impl` (same locations: `app/.claude/skills/spec-impl-game/` and `app/.agents/skills/spec-impl-game/`), for specs that add a new game to the catalog. Runs the exact same four phases as `/spec-impl`, then automatically chains the `game-planner` and `game-jam` agents (see Tooling), one after the other, to plan the next game.
 - Specs live in `specs/NN-slug.md` with Status / Depends on / Date / Objective header, scope, data model, steps, acceptance criteria and decisions.
 - `specs/.spec-config.yml` — `AutoCreateBranch: true`: `/spec-impl` creates a `spec-NN-slug` branch automatically. Each spec is merged into `main` through a PR.
 - `specs/game-jam/` — scratch/proposal area used by the `game-jam` agent (see Tooling): each run creates `<date>-<theme-slug>/` with 3 competing game proposals (full spec + pitch); not part of the numbered sequence below until one gets promoted to `specs/NN-slug.md`.
